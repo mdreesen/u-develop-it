@@ -20,9 +20,22 @@ const db = new sqlite3.Database('./db/election.db', err => {
 // All candidates statement
 /* the db object is using the all() method
  this method runs the sql query and executes the callback with all the resulting rows that match the query
-db.all(`SELECT * FROM candidates`, (err, rows) => {
-   console.log(rows);
-}); */
+ app.get('/api/candidates', (req, res) => {
+     const sql = `SELECT * FROM candidates`;
+     const params = [];
+     db.all(sql, params, (err, rows) => {
+         if (err) {
+             res.status(500).json({ error: err.message });
+             return;
+         }
+
+         res.json([
+             message: 'success',
+             data: rows
+         ]);
+     });
+ });
+*/
 
 // Single candidate statement
 /*db.get(`SELECT * FROM candidates WHERE id = 1`, (err, row) => {
