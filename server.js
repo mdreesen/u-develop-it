@@ -71,6 +71,52 @@ app.get('/api/candidate/:id', (req, res) => {
 })
 */
 
+// Gets all parties
+app.get('/api/parties', (req, res) => {
+    const sql = `SELECT * FROM parties`;
+    const params = [];
+    db.all(sql, params, (err, rows) => {
+        if (err) {
+            res.status(500).json({ error: err.message });
+            return
+        }
+        res.json({
+            message: 'success',
+            data: rows
+        });
+    });
+});
+
+// Gets individual party
+app.get('/api/party/:id', (req, res) => {
+    const sql = `SELECT * FROM parties WHERE id = ?`;
+    const params = [req.params.id];
+    db.get(sql, params, (err, row) => {
+        if (err) {
+            res.status(400).json({ error: err.message });
+            return
+        }
+        res.json({
+            message: 'success',
+            data: row
+        });
+    });
+});
+
+// Deletes the party
+app.delete('/api/party/:id', (req, res) => {
+    const sql = `DELETE FROM parties WHERE id = ?`;
+    const params = [req.params.id];
+    db.run(sql, params, function(err, result) {
+        if (err) {
+            res.status(400).json({ error: res.message });
+            return;
+        }
+
+        res.json({ message: 'successfully deleted', changes: this.changes });
+    });
+});
+
 /*
 The result value is undefined. This was expected because run() doesn't return any result data.
 this is shown to be the Statement object, which has three properties:
@@ -81,7 +127,6 @@ We'll keep the this.changes value to verify whether the SQL query made changes t
 */
 
 // Delete candidate
-/*
 app.delete('/api/candidates/:id', (req, res) => {
     const sql = `DELETE FROM candidates WHERE id = ?`;
     const params = [req.params.id]
@@ -97,7 +142,33 @@ app.delete('/api/candidates/:id', (req, res) => {
         });
     });
 });
-*/
+
+// Updates the candidate
+app.put('/api/candidate/:id', (req, res) => {
+    const errors = inputCheck(req.body, 'party_id');
+
+    if (errors) {
+        res.status(400).json({ error: errors });
+        return;
+    }
+    const sql = `UPDATE candidates SET party_id = ? 
+                 WHERE id = ?`;
+    const params = [req.body.party_id, req.params.id];
+
+    db.run(sql, params, function(err, result) {
+        if (err) {
+            res.status(400).json({ error: err.message });
+            return;
+        }
+
+        res.json({
+            message: 'success',
+            data: req.body,
+            changes: this.changes
+        });
+    });
+});
+
 
 // Adds information back in
 app.post('/api/candidate', ({ body }, res) => {
@@ -129,6 +200,7 @@ In the SQL command we use the INSERT INTO command for the candidates table to ad
 The four placeholders must match the four values in params, so we must use an array.
 In the response, we'll log the this.lastID to display the id of the added candidate.
 */
+
 /*
 const sql = `INSERT INTO CANDIDATES (id, first_name, last_name, industry_connected)
             VALUES (?,?,?,?)`;
@@ -141,6 +213,7 @@ db.run(sql, params, function(err, result) {
     console.log(result, this.lastID);
 });
 */
+
 
 
 // Default response for any other request(Not Found) Catch all
